@@ -61,6 +61,7 @@
 
         .action-buttons {
             display: flex;
+            flex-wrap: wrap;
             gap: 10px;
             width: 100%;
             margin-top: 10px;
@@ -73,12 +74,13 @@
             cursor: pointer;
             text-transform: uppercase;
             letter-spacing: 1px;
-            flex: 1;
+            flex: 1 1 200px;
+            font-weight: bold;
         }
 
-        button.secondary {
-            background-color: #888;
-        }
+        button.secondary { background-color: #6c757d; }
+        button.danger { background-color: #dc3545; }
+        button.success { background-color: #28a745; }
 
         .canvas-wrapper {
             width: 100%;
@@ -117,6 +119,7 @@
             font-family: var(--paragraph-font);
             color: var(--text-color);
             line-height: 1.6;
+            outline: none;
         }
 
         .sword-anchor {
@@ -124,7 +127,6 @@
             margin: 10px 0 30px 0;
         }
 
-        /* Auto-scaling constraints for the uploaded sword */
         .sword-anchor img {
             max-width: 90%;
             max-height: 80px;
@@ -148,6 +150,32 @@
             padding: 15px;
             background: rgba(255, 255, 255, 0.4);
             position: relative;
+        }
+
+        .delete-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background-color: #ff4c4c;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            font-size: 12px;
+            line-height: 1;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.3;
+            transition: opacity 0.2s;
+            padding: 0;
+            flex: none;
+        }
+        
+        .content-block:hover .delete-btn {
+            opacity: 1;
         }
 
         .content-block h3 {
@@ -184,14 +212,17 @@
     <div id="controls">
         <div class="control-group" style="flex: 1 1 100%;">
             <label>Aesthetic Preset</label>
-            <select id="aestheticPreset">
-                <option value="custom">-- Custom --</option>
-                <option value="cherrySnow">Cherry Snow Angel</option>
-                <option value="slavicWinter">Slavic Doll Wintercore</option>
-                <option value="summerModel">Summer Model</option>
-                <option value="medicalcore">Clinical / Medicalcore</option>
-                <option value="yamiKawaii">Yami Kawaii</option>
-            </select>
+            <div style="display: flex; gap: 10px;">
+                <select id="aestheticPreset" style="flex: 1;">
+                    <option value="custom">-- Custom --</option>
+                    <option value="cherrySnow">Cherry Snow Angel</option>
+                    <option value="slavicWinter">Slavic Doll Wintercore</option>
+                    <option value="summerModel">Summer Model</option>
+                    <option value="medicalcore">Clinical / Medicalcore</option>
+                    <option value="yamiKawaii">Yami Kawaii</option>
+                </select>
+                <button class="secondary" id="savePresetBtn" style="flex: 0 1 150px; margin-top: 5px;">Save Preset</button>
+            </div>
         </div>
 
         <div class="control-group">
@@ -231,62 +262,39 @@
             </select>
         </div>
         
-        <!-- Updated Sword Upload Field -->
         <div class="control-group">
             <label>Upload Sword Graphic</label>
             <input type="file" id="swordUpload" accept="image/png, image/jpeg, image/gif, image/webp">
         </div>
         
         <div class="action-buttons">
-            <button class="secondary" id="addSectionBtn">Add New Section +</button>
-            <button id="downloadBtn">Download Zine Image</button>
+            <button class="secondary" id="addSectionBtn">Add Section +</button>
+            <button class="success" id="downloadBtn">Download Zine Image</button>
+            <button class="danger" id="clearBtn">Clear & Reset</button>
         </div>
     </div>
 
     <div class="canvas-wrapper">
         <div id="canvas-container">
-            <h1 contenteditable="true">Main Title Here</h1>
+            <h1 contenteditable="true" id="mainTitle">Main Title Here</h1>
             
             <div class="sword-anchor">
                 <img id="swordImg" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='400' height='20'><line x1='0' y1='10' x2='400' y2='10' stroke='black' stroke-width='2'/><circle cx='200' cy='10' r='5' fill='black'/></svg>" alt="Sword Divider">
             </div>
 
             <div class="layout-grid three-col" id="mainGrid">
-                
-                <div class="content-block">
-                    <h3 contenteditable="true">The Essentials:</h3>
-                    <div class="image-placeholder" onclick="addImage(this)">Click to set image URL</div>
-                    <div contenteditable="true">
-                        Item one<br>Item two<br>Item three
-                    </div>
                 </div>
-
-                <div class="content-block">
-                    <h3 contenteditable="true">Think:</h3>
-                    <div contenteditable="true">Type your mood descriptors here...</div>
-                    <br>
-                    <div class="image-placeholder" onclick="addImage(this)">Click to set image URL</div>
-                </div>
-
-                <div class="content-block">
-                    <h3 contenteditable="true">Scents:</h3>
-                    <div contenteditable="true">Note one<br>Note two<br>Note three</div>
-                </div>
-
-                <div class="content-block">
-                    <h3 contenteditable="true">The Face:</h3>
-                    <div contenteditable="true">Detail one<br>Detail two</div>
-                </div>
-
-            </div>
         </div>
     </div>
+
+    <input type="file" id="hiddenImageUpload" accept="image/*" style="display: none;">
 
     <script>
         const root = document.documentElement;
         const grid = document.getElementById('mainGrid');
-
-        const presets = {
+        
+        // Base Presets + LocalStorage Custom Presets
+        let presets = {
             cherrySnow: { bg: '#fdf5f8', accent: '#f1d4df', text: '#333333', header: "'Playfair Display', serif", font: "'Inter', sans-serif" },
             slavicWinter: { bg: '#e6f2fa', accent: '#cce0f0', text: '#2c3e50', header: "'Playfair Display', serif", font: "'Inter', sans-serif" },
             summerModel: { bg: '#eefbe6', accent: '#d3ecd3', text: '#3d4035', header: "'Cinzel', serif", font: "'Inter', sans-serif" },
@@ -294,7 +302,71 @@
             yamiKawaii: { bg: '#1a1a2e', accent: '#ffb6c1', text: '#e94560', header: "'Great Vibes', cursive", font: "'Inter', sans-serif" }
         };
 
-        // Apply Aesthetic Preset
+        // --- STATE MANAGEMENT & AUTO-SAVE ---
+        
+        function saveState() {
+            const state = {
+                title: document.getElementById('mainTitle').innerHTML,
+                swordSrc: document.getElementById('swordImg').src,
+                gridHtml: grid.innerHTML,
+                controls: {
+                    bg: document.getElementById('bgColor').value,
+                    accent: document.getElementById('accentColor').value,
+                    hFont: document.getElementById('headerFont').value,
+                    pFont: document.getElementById('paragraphFont').value,
+                    columns: document.getElementById('layoutStyle').value,
+                    preset: document.getElementById('aestheticPreset').value
+                }
+            };
+            localStorage.setItem('zineState', JSON.stringify(state));
+        }
+
+        function loadState() {
+            // Load custom presets
+            const savedPresets = JSON.parse(localStorage.getItem('zinePresets')) || {};
+            presets = { ...presets, ...savedPresets };
+            const presetSelect = document.getElementById('aestheticPreset');
+            Object.keys(savedPresets).forEach(key => {
+                const opt = document.createElement('option');
+                opt.value = key;
+                opt.textContent = `* ${key} *`;
+                presetSelect.appendChild(opt);
+            });
+
+            const saved = JSON.parse(localStorage.getItem('zineState'));
+            if (saved) {
+                // Restore Canvas
+                document.getElementById('mainTitle').innerHTML = saved.title;
+                document.getElementById('swordImg').src = saved.swordSrc;
+                grid.innerHTML = saved.gridHtml;
+                
+                // Restore Controls
+                document.getElementById('bgColor').value = saved.controls.bg;
+                document.getElementById('accentColor').value = saved.controls.accent;
+                document.getElementById('headerFont').value = saved.controls.hFont;
+                document.getElementById('paragraphFont').value = saved.controls.pFont;
+                document.getElementById('layoutStyle').value = saved.controls.columns;
+                document.getElementById('aestheticPreset').value = saved.controls.preset;
+                
+                // Apply CSS
+                root.style.setProperty('--bg-color', saved.controls.bg);
+                root.style.setProperty('--accent-border', saved.controls.accent);
+                root.style.setProperty('--header-font', saved.controls.hFont);
+                root.style.setProperty('--paragraph-font', saved.controls.pFont);
+                
+                updateColumns(saved.controls.columns);
+            } else {
+                // Default Canvas generation if fresh start
+                addDefaultBlocks();
+            }
+        }
+
+        // Auto-save triggers
+        document.getElementById('canvas-container').addEventListener('input', saveState);
+        document.getElementById('canvas-container').addEventListener('DOMSubtreeModified', saveState);
+
+        // --- CONTROL PANEL LOGIC ---
+
         document.getElementById('aestheticPreset').addEventListener('change', (e) => {
             const preset = presets[e.target.value];
             if(preset) {
@@ -308,83 +380,182 @@
                 document.getElementById('accentColor').value = preset.accent;
                 document.getElementById('headerFont').value = preset.header;
                 document.getElementById('paragraphFont').value = preset.font;
+                saveState();
             }
         });
 
-        // Manual Variables Update
-        document.getElementById('bgColor').addEventListener('input', (e) => root.style.setProperty('--bg-color', e.target.value));
-        document.getElementById('accentColor').addEventListener('input', (e) => root.style.setProperty('--accent-border', e.target.value));
-        document.getElementById('headerFont').addEventListener('change', (e) => root.style.setProperty('--header-font', e.target.value));
-        document.getElementById('paragraphFont').addEventListener('change', (e) => root.style.setProperty('--paragraph-font', e.target.value));
+        document.getElementById('savePresetBtn').addEventListener('click', () => {
+            const name = prompt("Enter a name for this custom preset:");
+            if (name) {
+                const safeName = name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+                const newPreset = {
+                    bg: document.getElementById('bgColor').value,
+                    accent: document.getElementById('accentColor').value,
+                    text: '#333333', // Defaulting text color
+                    header: document.getElementById('headerFont').value,
+                    font: document.getElementById('paragraphFont').value
+                };
+                
+                // Save to active object and local storage
+                presets[safeName] = newPreset;
+                const savedPresets = JSON.parse(localStorage.getItem('zinePresets')) || {};
+                savedPresets[safeName] = newPreset;
+                localStorage.setItem('zinePresets', JSON.stringify(savedPresets));
 
-        // Layout Columns Update
-        document.getElementById('layoutStyle').addEventListener('change', (e) => {
-            grid.className = 'layout-grid'; 
-            if (e.target.value === '1') grid.classList.add('one-col');
-            if (e.target.value === '3') grid.classList.add('three-col');
-            if (e.target.value === '4') grid.classList.add('four-col');
+                // Add to dropdown
+                const opt = document.createElement('option');
+                opt.value = safeName;
+                opt.textContent = `* ${name} *`;
+                document.getElementById('aestheticPreset').appendChild(opt);
+                document.getElementById('aestheticPreset').value = safeName;
+                saveState();
+            }
         });
 
-        // Add New Section
-        document.getElementById('addSectionBtn').addEventListener('click', () => {
+        const updateVar = (id, cssVar) => {
+            document.getElementById(id).addEventListener('input', (e) => {
+                root.style.setProperty(cssVar, e.target.value);
+                document.getElementById('aestheticPreset').value = 'custom';
+                saveState();
+            });
+        };
+        updateVar('bgColor', '--bg-color');
+        updateVar('accentColor', '--accent-border');
+        updateVar('headerFont', '--header-font');
+        updateVar('paragraphFont', '--paragraph-font');
+
+        function updateColumns(val) {
+            grid.className = 'layout-grid'; 
+            if (val === '1') grid.classList.add('one-col');
+            if (val === '3') grid.classList.add('three-col');
+            if (val === '4') grid.classList.add('four-col');
+        }
+        document.getElementById('layoutStyle').addEventListener('change', (e) => {
+            updateColumns(e.target.value);
+            saveState();
+        });
+
+        // --- DYNAMIC CONTENT LOGIC ---
+
+        function addDefaultBlocks() {
+            grid.innerHTML = '';
+            const defaults = [
+                { header: "The Essentials:", text: "Item one<br>Item two" },
+                { header: "Think:", text: "Descriptors here..." },
+                { header: "Scents:", text: "Note one<br>Note two" }
+            ];
+            defaults.forEach(d => createBlock(d.header, d.text));
+            saveState();
+        }
+
+        function createBlock(headerText = "New Section:", bodyText = "Type text here...") {
             const newBlock = document.createElement('div');
             newBlock.className = 'content-block';
             newBlock.innerHTML = `
-                <h3 contenteditable="true">New Section:</h3>
-                <div class="image-placeholder" onclick="addImage(this)">Click to set image URL</div>
-                <div contenteditable="true">Type text here...</div>
+                <button class="delete-btn" onclick="deleteSection(this)">×</button>
+                <h3 contenteditable="true">${headerText}</h3>
+                <div class="image-placeholder" onclick="triggerImageUpload(this)">Click to upload image</div>
+                <div contenteditable="true">${bodyText}</div>
             `;
             grid.appendChild(newBlock);
-        });
+            saveState();
+        }
 
-        // Sword Local File Upload Logic
+        document.getElementById('addSectionBtn').addEventListener('click', () => createBlock());
+
+        function deleteSection(btn) {
+            btn.parentElement.remove();
+            saveState();
+        }
+
+        // --- IMAGE UPLOAD LOGIC ---
+
         document.getElementById('swordUpload').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(event) {
                     document.getElementById('swordImg').src = event.target.result;
+                    saveState();
                 };
                 reader.readAsDataURL(file);
             }
         });
 
-        // Add Image URL Logic
-        function addImage(element) {
-            const url = prompt("Enter image URL:");
-            if (url) {
-                element.style.backgroundImage = `url('${url}')`;
-                element.innerHTML = "";
-                element.style.border = "none";
-            }
-        }
+        let currentImageTarget = null;
+        const hiddenUpload = document.getElementById('hiddenImageUpload');
 
-        // Export to PNG
-        document.getElementById('downloadBtn').addEventListener('click', function() {
+        window.triggerImageUpload = function(element) {
+            currentImageTarget = element;
+            hiddenUpload.click();
+        };
+
+        hiddenUpload.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file && currentImageTarget) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    currentImageTarget.style.backgroundImage = `url('${event.target.result}')`;
+                    currentImageTarget.innerHTML = "";
+                    currentImageTarget.style.border = "none";
+                    saveState();
+                };
+                reader.readAsDataURL(file);
+            }
+            // Reset input so the same file can be uploaded again if needed
+            e.target.value = ''; 
+        });
+
+        // --- EXPORT & RESET LOGIC ---
+
+        function triggerDownload(callback = null) {
             const canvasContainer = document.getElementById('canvas-container');
             const placeholders = document.querySelectorAll('.image-placeholder');
+            const deleteBtns = document.querySelectorAll('.delete-btn');
             
+            // Clean up UI elements for the screenshot
             placeholders.forEach(p => {
-                if(p.innerHTML.includes("Click to set")) {
+                if(p.innerHTML.includes("Click to upload")) {
                     p.dataset.tempText = p.innerHTML;
                     p.innerHTML = "";
                 }
             });
+            deleteBtns.forEach(btn => btn.style.display = 'none');
 
             html2canvas(canvasContainer, { useCORS: true, scale: 2 }).then(canvas => {
+                // Restore UI elements
                 placeholders.forEach(p => {
                     if(p.dataset.tempText) {
                         p.innerHTML = p.dataset.tempText;
                         delete p.dataset.tempText;
                     }
                 });
+                deleteBtns.forEach(btn => btn.style.display = 'flex');
 
                 const link = document.createElement('a');
                 link.download = `zine_layout_${Date.now()}.png`;
                 link.href = canvas.toDataURL('image/png');
                 link.click();
+
+                if (callback) callback();
             });
+        }
+
+        document.getElementById('downloadBtn').addEventListener('click', () => triggerDownload());
+
+        document.getElementById('clearBtn').addEventListener('click', () => {
+            if (confirm("Are you sure you want to clear the page? It will download your current canvas first just in case!")) {
+                triggerDownload(() => {
+                    localStorage.removeItem('zineState');
+                    // Retain custom presets by not clearing 'zinePresets'
+                    location.reload();
+                });
+            }
         });
+
+        // Init
+        window.onload = loadState;
+
     </script>
 </body>
 </html>

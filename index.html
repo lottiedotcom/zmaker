@@ -51,7 +51,7 @@
             flex: 1 1 140px;
         }
 
-        select, input[type="color"], input[type="text"], button {
+        select, input[type="color"], input[type="text"], input[type="file"], button {
             margin-top: 5px;
             padding: 8px;
             border: 1px solid #ccc;
@@ -124,9 +124,12 @@
             margin: 10px 0 30px 0;
         }
 
+        /* Auto-scaling constraints for the uploaded sword */
         .sword-anchor img {
-            max-width: 80%;
+            max-width: 90%;
+            max-height: 80px;
             height: auto;
+            object-fit: contain;
         }
 
         .layout-grid {
@@ -227,9 +230,11 @@
                 <option value="4">4 Columns</option>
             </select>
         </div>
+        
+        <!-- Updated Sword Upload Field -->
         <div class="control-group">
-            <label>Sword Image URL</label>
-            <input type="text" id="swordUrl" placeholder="Paste image link here...">
+            <label>Upload Sword Graphic</label>
+            <input type="file" id="swordUpload" accept="image/png, image/jpeg, image/gif, image/webp">
         </div>
         
         <div class="action-buttons">
@@ -314,7 +319,7 @@
 
         // Layout Columns Update
         document.getElementById('layoutStyle').addEventListener('change', (e) => {
-            grid.className = 'layout-grid'; // reset
+            grid.className = 'layout-grid'; 
             if (e.target.value === '1') grid.classList.add('one-col');
             if (e.target.value === '3') grid.classList.add('three-col');
             if (e.target.value === '4') grid.classList.add('four-col');
@@ -332,12 +337,19 @@
             grid.appendChild(newBlock);
         });
 
-        // Update Sword URL
-        document.getElementById('swordUrl').addEventListener('input', (e) => {
-            if (e.target.value.trim() !== '') document.getElementById('swordImg').src = e.target.value;
+        // Sword Local File Upload Logic
+        document.getElementById('swordUpload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    document.getElementById('swordImg').src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
         });
 
-        // Add Image
+        // Add Image URL Logic
         function addImage(element) {
             const url = prompt("Enter image URL:");
             if (url) {

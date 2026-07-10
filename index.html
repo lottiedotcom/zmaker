@@ -25,7 +25,6 @@
             align-items: center;
         }
 
-        /* Control Panel */
         #controls {
             background: white;
             padding: 20px;
@@ -49,10 +48,10 @@
             text-transform: uppercase;
             letter-spacing: 1px;
             color: #555;
-            flex: 1 1 150px;
+            flex: 1 1 140px;
         }
 
-        select, input[type="color"], input[type="text"] {
+        select, input[type="color"], input[type="text"], button {
             margin-top: 5px;
             padding: 8px;
             border: 1px solid #ccc;
@@ -60,21 +59,27 @@
             font-size: 14px;
         }
 
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            margin-top: 10px;
+        }
+
         button {
-            margin-top: 20px;
-            padding: 10px 15px;
             background-color: #333;
             color: #fff;
             border: none;
-            border-radius: 4px;
             cursor: pointer;
-            font-size: 14px;
             text-transform: uppercase;
             letter-spacing: 1px;
-            width: 100%;
+            flex: 1;
         }
 
-        /* Mobile Scrolling Wrapper */
+        button.secondary {
+            background-color: #888;
+        }
+
         .canvas-wrapper {
             width: 100%;
             max-width: 100vw;
@@ -84,10 +89,9 @@
             padding-bottom: 20px;
         }
 
-        /* Zine Canvas - Forced Width */
         #canvas-container {
             background-color: var(--bg-color);
-            width: 800px; /* Fixed width to prevent squishing on mobile */
+            width: 800px;
             min-width: 800px;
             min-height: 1000px;
             padding: 40px;
@@ -96,7 +100,6 @@
             position: relative;
         }
 
-        /* Headers and Typography */
         h1, h2, h3 {
             font-family: var(--header-font);
             color: var(--text-color);
@@ -116,7 +119,6 @@
             line-height: 1.6;
         }
 
-        /* Sword Graphic Anchor */
         .sword-anchor {
             text-align: center;
             margin: 10px 0 30px 0;
@@ -127,7 +129,6 @@
             height: auto;
         }
 
-        /* Grid Layout System */
         .layout-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -135,14 +136,15 @@
             margin-top: 20px;
         }
 
-        .layout-grid.three-col {
-            grid-template-columns: 1fr 1fr 1fr;
-        }
+        .layout-grid.one-col { grid-template-columns: 1fr; }
+        .layout-grid.three-col { grid-template-columns: 1fr 1fr 1fr; }
+        .layout-grid.four-col { grid-template-columns: 1fr 1fr 1fr 1fr; }
 
         .content-block {
             border: 1px solid var(--accent-border);
             padding: 15px;
             background: rgba(255, 255, 255, 0.4);
+            position: relative;
         }
 
         .content-block h3 {
@@ -172,16 +174,23 @@
             background-size: cover;
             background-position: center;
         }
-
-        /* Hide specific elements during download */
-        .hide-on-export {
-            display: none !important;
-        }
     </style>
 </head>
 <body>
 
     <div id="controls">
+        <div class="control-group" style="flex: 1 1 100%;">
+            <label>Aesthetic Preset</label>
+            <select id="aestheticPreset">
+                <option value="custom">-- Custom --</option>
+                <option value="cherrySnow">Cherry Snow Angel</option>
+                <option value="slavicWinter">Slavic Doll Wintercore</option>
+                <option value="summerModel">Summer Model</option>
+                <option value="medicalcore">Clinical / Medicalcore</option>
+                <option value="yamiKawaii">Yami Kawaii</option>
+            </select>
+        </div>
+
         <div class="control-group">
             <label>Page Background</label>
             <input type="color" id="bgColor" value="#fdf5f8">
@@ -193,17 +202,17 @@
         <div class="control-group">
             <label>Header Font</label>
             <select id="headerFont">
-                <option value="'Playfair Display', serif">Playfair Display (Serif)</option>
-                <option value="'Great Vibes', cursive">Great Vibes (Script)</option>
-                <option value="'Cinzel', serif">Cinzel (Classic)</option>
-                <option value="'Courier New', monospace">Courier New (Typewriter)</option>
+                <option value="'Playfair Display', serif">Playfair Display</option>
+                <option value="'Great Vibes', cursive">Great Vibes</option>
+                <option value="'Cinzel', serif">Cinzel</option>
+                <option value="'Courier New', monospace">Courier New</option>
                 <option value="Arial, sans-serif">Arial</option>
             </select>
         </div>
         <div class="control-group">
             <label>Text Font</label>
             <select id="paragraphFont">
-                <option value="'Inter', sans-serif">Inter (Clean Sans)</option>
+                <option value="'Inter', sans-serif">Inter</option>
                 <option value="'Playfair Display', serif">Playfair Display</option>
                 <option value="'Courier New', monospace">Courier New</option>
                 <option value="Georgia, serif">Georgia</option>
@@ -212,19 +221,21 @@
         <div class="control-group">
             <label>Layout Columns</label>
             <select id="layoutStyle">
+                <option value="1">1 Column</option>
                 <option value="2">2 Columns</option>
                 <option value="3" selected>3 Columns</option>
+                <option value="4">4 Columns</option>
             </select>
         </div>
         <div class="control-group">
             <label>Sword Image URL</label>
             <input type="text" id="swordUrl" placeholder="Paste image link here...">
         </div>
-        <div class="control-group">
-            <label>File Name</label>
-            <input type="text" id="fileName" value="zine_layout">
+        
+        <div class="action-buttons">
+            <button class="secondary" id="addSectionBtn">Add New Section +</button>
+            <button id="downloadBtn">Download Zine Image</button>
         </div>
-        <button id="downloadBtn">Download Zine Image</button>
     </div>
 
     <div class="canvas-wrapper">
@@ -241,36 +252,25 @@
                     <h3 contenteditable="true">The Essentials:</h3>
                     <div class="image-placeholder" onclick="addImage(this)">Click to set image URL</div>
                     <div contenteditable="true">
-                        Item one<br>
-                        Item two<br>
-                        Item three
+                        Item one<br>Item two<br>Item three
                     </div>
                 </div>
 
                 <div class="content-block">
                     <h3 contenteditable="true">Think:</h3>
-                    <div contenteditable="true">
-                        Type your mood descriptors here...
-                    </div>
+                    <div contenteditable="true">Type your mood descriptors here...</div>
                     <br>
                     <div class="image-placeholder" onclick="addImage(this)">Click to set image URL</div>
                 </div>
 
                 <div class="content-block">
                     <h3 contenteditable="true">Scents:</h3>
-                    <div contenteditable="true">
-                        Note one<br>
-                        Note two<br>
-                        Note three
-                    </div>
+                    <div contenteditable="true">Note one<br>Note two<br>Note three</div>
                 </div>
 
                 <div class="content-block">
                     <h3 contenteditable="true">The Face:</h3>
-                    <div contenteditable="true">
-                        Detail one<br>
-                        Detail two
-                    </div>
+                    <div contenteditable="true">Detail one<br>Detail two</div>
                 </div>
 
             </div>
@@ -279,41 +279,65 @@
 
     <script>
         const root = document.documentElement;
+        const grid = document.getElementById('mainGrid');
 
-        // Variables
-        document.getElementById('bgColor').addEventListener('input', (e) => {
-            root.style.setProperty('--bg-color', e.target.value);
+        const presets = {
+            cherrySnow: { bg: '#fdf5f8', accent: '#f1d4df', text: '#333333', header: "'Playfair Display', serif", font: "'Inter', sans-serif" },
+            slavicWinter: { bg: '#e6f2fa', accent: '#cce0f0', text: '#2c3e50', header: "'Playfair Display', serif", font: "'Inter', sans-serif" },
+            summerModel: { bg: '#eefbe6', accent: '#d3ecd3', text: '#3d4035', header: "'Cinzel', serif", font: "'Inter', sans-serif" },
+            medicalcore: { bg: '#ffffff', accent: '#b3cde0', text: '#011f4b', header: "'Courier New', monospace", font: "'Inter', sans-serif" },
+            yamiKawaii: { bg: '#1a1a2e', accent: '#ffb6c1', text: '#e94560', header: "'Great Vibes', cursive", font: "'Inter', sans-serif" }
+        };
+
+        // Apply Aesthetic Preset
+        document.getElementById('aestheticPreset').addEventListener('change', (e) => {
+            const preset = presets[e.target.value];
+            if(preset) {
+                root.style.setProperty('--bg-color', preset.bg);
+                root.style.setProperty('--accent-border', preset.accent);
+                root.style.setProperty('--text-color', preset.text);
+                root.style.setProperty('--header-font', preset.header);
+                root.style.setProperty('--paragraph-font', preset.font);
+                
+                document.getElementById('bgColor').value = preset.bg;
+                document.getElementById('accentColor').value = preset.accent;
+                document.getElementById('headerFont').value = preset.header;
+                document.getElementById('paragraphFont').value = preset.font;
+            }
         });
 
-        document.getElementById('accentColor').addEventListener('input', (e) => {
-            root.style.setProperty('--accent-border', e.target.value);
-        });
+        // Manual Variables Update
+        document.getElementById('bgColor').addEventListener('input', (e) => root.style.setProperty('--bg-color', e.target.value));
+        document.getElementById('accentColor').addEventListener('input', (e) => root.style.setProperty('--accent-border', e.target.value));
+        document.getElementById('headerFont').addEventListener('change', (e) => root.style.setProperty('--header-font', e.target.value));
+        document.getElementById('paragraphFont').addEventListener('change', (e) => root.style.setProperty('--paragraph-font', e.target.value));
 
-        document.getElementById('headerFont').addEventListener('change', (e) => {
-            root.style.setProperty('--header-font', e.target.value);
-        });
-
-        document.getElementById('paragraphFont').addEventListener('change', (e) => {
-            root.style.setProperty('--paragraph-font', e.target.value);
-        });
-
+        // Layout Columns Update
         document.getElementById('layoutStyle').addEventListener('change', (e) => {
-            const grid = document.getElementById('mainGrid');
-            if (e.target.value === '3') {
-                grid.classList.add('three-col');
-            } else {
-                grid.classList.remove('three-col');
-            }
+            grid.className = 'layout-grid'; // reset
+            if (e.target.value === '1') grid.classList.add('one-col');
+            if (e.target.value === '3') grid.classList.add('three-col');
+            if (e.target.value === '4') grid.classList.add('four-col');
         });
 
+        // Add New Section
+        document.getElementById('addSectionBtn').addEventListener('click', () => {
+            const newBlock = document.createElement('div');
+            newBlock.className = 'content-block';
+            newBlock.innerHTML = `
+                <h3 contenteditable="true">New Section:</h3>
+                <div class="image-placeholder" onclick="addImage(this)">Click to set image URL</div>
+                <div contenteditable="true">Type text here...</div>
+            `;
+            grid.appendChild(newBlock);
+        });
+
+        // Update Sword URL
         document.getElementById('swordUrl').addEventListener('input', (e) => {
-            const img = document.getElementById('swordImg');
-            if (e.target.value.trim() !== '') {
-                img.src = e.target.value;
-            }
+            if (e.target.value.trim() !== '') document.getElementById('swordImg').src = e.target.value;
         });
 
-        // Add Image Function
+        // Add Image
         function addImage(element) {
             const url = prompt("Enter image URL:");
             if (url) {
@@ -323,13 +347,11 @@
             }
         }
 
-        // Download Functionality
+        // Export to PNG
         document.getElementById('downloadBtn').addEventListener('click', function() {
             const canvasContainer = document.getElementById('canvas-container');
-            const fileNameInput = document.getElementById('fileName').value.trim() || 'zine_layout';
-            
-            // Temporarily disable placeholders text for cleaner export
             const placeholders = document.querySelectorAll('.image-placeholder');
+            
             placeholders.forEach(p => {
                 if(p.innerHTML.includes("Click to set")) {
                     p.dataset.tempText = p.innerHTML;
@@ -337,11 +359,7 @@
                 }
             });
 
-            html2canvas(canvasContainer, {
-                useCORS: true,
-                scale: 2 // Exports at higher resolution
-            }).then(canvas => {
-                // Restore placeholder text
+            html2canvas(canvasContainer, { useCORS: true, scale: 2 }).then(canvas => {
                 placeholders.forEach(p => {
                     if(p.dataset.tempText) {
                         p.innerHTML = p.dataset.tempText;
@@ -349,9 +367,8 @@
                     }
                 });
 
-                // Trigger download
                 const link = document.createElement('a');
-                link.download = `${fileNameInput}.png`;
+                link.download = `zine_layout_${Date.now()}.png`;
                 link.href = canvas.toDataURL('image/png');
                 link.click();
             });

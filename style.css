@@ -10,7 +10,6 @@ body {
     font-family: sans-serif;
     background-color: #e0e5ec;
     margin: 0;
-    /* Added padding at the bottom so the zine isn't hidden under the sticky toolbar */
     padding: 15px;
     padding-bottom: 80px; 
     display: flex;
@@ -114,7 +113,6 @@ button.success { background-color: #28a745; }
 .canvas-wrapper {
     width: 100%;
     max-width: 800px;
-    /* Removed overflow-x: auto so it scales instead of scrolling */
     display: flex;
     justify-content: flex-start;
 }
@@ -124,11 +122,12 @@ button.success { background-color: #28a745; }
     width: 800px;
     min-width: 800px;
     min-height: 1000px;
+    height: auto; /* Allow container to grow dynamically */
     padding: 40px;
     box-sizing: border-box;
     box-shadow: 0 10px 20px rgba(0,0,0,0.1);
     position: relative;
-    overflow: hidden;
+    /* Removed overflow: hidden so background doesn't clip */
     transform-origin: top left;
 }
 
@@ -224,7 +223,7 @@ p, div[contenteditable="true"] {
     display: flex;
     align-items: center;
     justify-content: center;
-    opacity: 0.8; /* Made slightly more opaque for mobile visibility */
+    opacity: 0.8;
     transition: opacity 0.2s;
     padding: 0;
     flex: none;

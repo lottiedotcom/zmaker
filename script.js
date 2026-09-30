@@ -1,8 +1,7 @@
 const root = document.documentElement;
 const grid = document.getElementById('mainGrid');
 
-// --- DRAG AND DROP SETUP ---
-// We use a small, reliable script to handle mobile-friendly long-press dragging
+// Initialize SortableJS for Drag and Drop
 const sortableScript = document.createElement('script');
 sortableScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js';
 document.head.appendChild(sortableScript);
@@ -152,31 +151,10 @@ updateVar('accentColor', '--accent-border');
 updateVar('headerFont', '--header-font');
 updateVar('paragraphFont', '--paragraph-font');
 
-// --- IMPROVED SCRAMBLE LOGIC ---
+// --- UPDATED SCRAMBLE LOGIC ---
 document.getElementById('scrambleBtn').addEventListener('click', () => {
-    grid.className = 'layout-grid collage-mode';
-    document.getElementById('layoutStyle').value = 'collage';
-    
+    // Only shuffle the physical DOM order. No resizing dimensions.
     const blocks = document.querySelectorAll('.content-block');
-    blocks.forEach(block => {
-        // Prevent massive 2x2 stretched boxes that crop photos.
-        // Limit max column span to 2, and row span strictly to 1 or auto so images don't get forced into tall vertical slices.
-        const isImage = block.classList.contains('image-block');
-        
-        if (isImage) {
-            // Images span 1 or 2 columns, but height stays natural (row span 1)
-            const colSpan = Math.random() > 0.5 ? 2 : 1;
-            block.style.gridColumn = `span ${colSpan}`;
-            block.style.gridRow = `span 1`; 
-        } else {
-            // Text boxes can be a bit more flexible but we still limit extreme stretching
-            const colSpan = Math.random() > 0.7 ? 2 : 1;
-            block.style.gridColumn = `span ${colSpan}`;
-            block.style.gridRow = `span 1`; 
-        }
-    });
-    
-    // Shuffle the physical DOM order for a true "scramble" effect
     const blocksArray = Array.from(blocks);
     blocksArray.sort(() => Math.random() - 0.5);
     blocksArray.forEach(block => grid.appendChild(block));
@@ -224,12 +202,6 @@ function createTextBlock(headerText = "New Section:", bodyText = "Type text here
         <div contenteditable="true" style="flex-grow: 1;">${bodyText}</div>
     `;
     grid.appendChild(newBlock);
-    
-    // Check if we are currently in collage mode to apply styling immediately
-    if (grid.classList.contains('collage-mode')) {
-        newBlock.style.gridColumn = `span ${Math.random() > 0.7 ? 2 : 1}`;
-        newBlock.style.gridRow = `span 1`;
-    }
     saveState();
 }
 
@@ -271,12 +243,6 @@ bulkUploadInput.addEventListener('change', function(e) {
                     <img src="${event.target.result}" alt="Zine Image">
                 `;
                 grid.appendChild(newBlock);
-                
-                // Keep image proportions safe on upload in collage mode
-                if (grid.classList.contains('collage-mode')) {
-                    newBlock.style.gridColumn = `span ${Math.random() > 0.5 ? 2 : 1}`;
-                    newBlock.style.gridRow = `span 1`;
-                }
                 saveState();
             };
             reader.readAsDataURL(file);

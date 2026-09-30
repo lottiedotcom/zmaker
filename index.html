@@ -20,76 +20,73 @@
 </head>
 <body>
 
-    <div id="controls">
-        <div class="control-group" style="flex: 1 1 100%;">
-            <label>Aesthetic Preset</label>
-            <div style="display: flex; gap: 10px;">
-                <select id="aestheticPreset" style="flex: 1;">
-                    <option value="custom">-- Custom --</option>
-                    <option value="cherrySnow">Cherry Snow Angel</option>
-                    <option value="slavicWinter">Slavic Doll Wintercore</option>
-                    <option value="summerModel">Summer Model</option>
-                    <option value="medicalcore">Clinical / Medicalcore</option>
-                    <option value="yamiKawaii">Yami Kawaii</option>
+    <!-- Collapsible Settings Panel -->
+    <details id="controls" class="settings-panel">
+        <summary>⚙️ Zine Settings & Styling</summary>
+        <div class="settings-content">
+            <div class="control-group" style="flex: 1 1 100%;">
+                <label>Aesthetic Preset</label>
+                <div style="display: flex; gap: 10px;">
+                    <select id="aestheticPreset" style="flex: 1;">
+                        <option value="custom">-- Custom --</option>
+                        <option value="cherrySnow">Cherry Snow Angel</option>
+                        <option value="slavicWinter">Slavic Doll Wintercore</option>
+                        <option value="summerModel">Summer Model</option>
+                        <option value="medicalcore">Clinical / Medicalcore</option>
+                        <option value="yamiKawaii">Yami Kawaii</option>
+                    </select>
+                    <button class="secondary" id="savePresetBtn" style="flex: 0 1 150px; margin-top: 5px;">Save Preset</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label>Page Background</label>
+                <input type="color" id="bgColor" value="#fdf5f8">
+            </div>
+            <div class="control-group">
+                <label>Accent / Border</label>
+                <input type="color" id="accentColor" value="#f1d4df">
+            </div>
+            <div class="control-group">
+                <label>Header Font</label>
+                <select id="headerFont">
+                    <option value="'Playfair Display', serif">Playfair Display</option>
+                    <option value="'Great Vibes', cursive">Great Vibes</option>
+                    <option value="'Cinzel', serif">Cinzel</option>
+                    <option value="'Courier New', monospace">Courier New</option>
+                    <option value="Arial, sans-serif">Arial</option>
                 </select>
-                <button class="secondary" id="savePresetBtn" style="flex: 0 1 150px; margin-top: 5px;">Save Preset</button>
+            </div>
+            <div class="control-group">
+                <label>Text Font</label>
+                <select id="paragraphFont">
+                    <option value="'Inter', sans-serif">Inter</option>
+                    <option value="'Playfair Display', serif">Playfair Display</option>
+                    <option value="'Courier New', monospace">Courier New</option>
+                    <option value="Georgia, serif">Georgia</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Layout Columns</label>
+                <select id="layoutStyle">
+                    <option value="1">1 Column</option>
+                    <option value="2">2 Columns</option>
+                    <option value="3" selected>3 Columns</option>
+                    <option value="4">4 Columns</option>
+                    <option value="collage" hidden>Collage</option>
+                </select>
+            </div>
+            
+            <div class="control-group" style="flex: 1 1 100%;">
+                <label>Upload Sword Graphic</label>
+                <input type="file" id="swordUpload" accept="image/png, image/jpeg, image/gif, image/webp">
             </div>
         </div>
-
-        <div class="control-group">
-            <label>Page Background</label>
-            <input type="color" id="bgColor" value="#fdf5f8">
-        </div>
-        <div class="control-group">
-            <label>Accent / Border</label>
-            <input type="color" id="accentColor" value="#f1d4df">
-        </div>
-        <div class="control-group">
-            <label>Header Font</label>
-            <select id="headerFont">
-                <option value="'Playfair Display', serif">Playfair Display</option>
-                <option value="'Great Vibes', cursive">Great Vibes</option>
-                <option value="'Cinzel', serif">Cinzel</option>
-                <option value="'Courier New', monospace">Courier New</option>
-                <option value="Arial, sans-serif">Arial</option>
-            </select>
-        </div>
-        <div class="control-group">
-            <label>Text Font</label>
-            <select id="paragraphFont">
-                <option value="'Inter', sans-serif">Inter</option>
-                <option value="'Playfair Display', serif">Playfair Display</option>
-                <option value="'Courier New', monospace">Courier New</option>
-                <option value="Georgia, serif">Georgia</option>
-            </select>
-        </div>
-        <div class="control-group">
-            <label>Layout Columns</label>
-            <select id="layoutStyle">
-                <option value="1">1 Column</option>
-                <option value="2">2 Columns</option>
-                <option value="3" selected>3 Columns</option>
-                <option value="4">4 Columns</option>
-                <option value="collage" hidden>Collage</option>
-            </select>
-        </div>
-        
-        <div class="control-group">
-            <label>Upload Sword Graphic</label>
-            <input type="file" id="swordUpload" accept="image/png, image/jpeg, image/gif, image/webp">
-        </div>
-        
-        <div class="action-buttons">
-            <button class="secondary" id="addTextBtn">Add Text Section +</button>
-            <button class="secondary" id="bulkUploadBtn">Bulk Upload Images</button>
-            <button class="accent" id="scrambleBtn">Scramble Perfect Fit</button>
-            <button class="success" id="downloadBtn">Download Zine</button>
-            <button class="danger" id="clearBtn">Clear</button>
-        </div>
-    </div>
+    </details>
 
     <input type="file" id="hiddenBulkUpload" accept="image/*" multiple style="display: none;">
 
+    <!-- The Zine Area -->
     <div class="canvas-wrapper">
         <div id="canvas-container">
             <h1 contenteditable="true" id="mainTitle">Main Title Here</h1>
@@ -103,6 +100,15 @@
         </div>
     </div>
 
+    <!-- Sticky Bottom App Toolbar -->
+    <div class="action-buttons sticky-toolbar">
+        <button class="secondary" id="addTextBtn">Add Text</button>
+        <button class="secondary" id="bulkUploadBtn">Images</button>
+        <button class="accent" id="scrambleBtn">Scramble</button>
+        <button class="success" id="downloadBtn">Save</button>
+        <button class="danger" id="clearBtn">Clear</button>
+    </div>
+
     <!-- Service Worker Registration -->
     <script>
         if ('serviceWorker' in navigator) {
@@ -114,6 +120,33 @@
                 });
             });
         }
+    </script>
+
+    <!-- Canvas Auto-Scaler for Mobile -->
+    <script>
+        function adjustCanvasScale() {
+            const wrapper = document.querySelector('.canvas-wrapper');
+            const canvas = document.getElementById('canvas-container');
+            const wrapperWidth = wrapper.clientWidth;
+            
+            // If screen is smaller than the 800px zine, scale it down perfectly
+            if (wrapperWidth < 800) {
+                const scale = wrapperWidth / 800;
+                canvas.style.transform = `scale(${scale})`;
+                // Adjust wrapper height so we don't leave massive blank white space
+                wrapper.style.height = `${canvas.offsetHeight * scale}px`;
+            } else {
+                canvas.style.transform = 'scale(1)';
+                wrapper.style.height = 'auto';
+            }
+        }
+
+        // Run scaling on load, resize, and whenever layout elements are added/changed
+        window.addEventListener('load', adjustCanvasScale);
+        window.addEventListener('resize', adjustCanvasScale);
+        
+        const observer = new MutationObserver(adjustCanvasScale);
+        observer.observe(document.getElementById('canvas-container'), { childList: true, subtree: true, characterData: true, attributes: true });
     </script>
 </body>
 </html>

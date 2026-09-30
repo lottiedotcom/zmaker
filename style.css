@@ -119,14 +119,12 @@ button.success { background-color: #28a745; }
     width: 800px;
     min-width: 800px;
     min-height: 1000px;
-    height: auto; 
+    height: max-content; /* Forces the background to wrap perfectly around all growing content */
     padding: 40px;
     box-sizing: border-box;
     box-shadow: 0 10px 20px rgba(0,0,0,0.1);
     position: relative;
     transform-origin: top left;
-    display: flex; 
-    flex-direction: column;
 }
 
 h1, h2, h3 {
@@ -190,7 +188,7 @@ p, div[contenteditable="true"] {
     border: 1px solid var(--accent-border);
     overflow: hidden;
     background: transparent;
-    max-height: 400px; /* Caps the maximum height of photos */
+    max-height: 400px; 
     display: flex;
     justify-content: center;
     align-items: center;

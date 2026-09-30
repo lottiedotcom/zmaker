@@ -109,44 +109,43 @@
         <button class="danger" id="clearBtn">Clear</button>
     </div>
 
-    <!-- Service Worker Registration -->
-    <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js').then(reg => {
-                    console.log('Service Worker registered', reg);
-                }).catch(err => {
-                    console.log('Service Worker registration failed', err);
-                });
-            });
-        }
-    </script>
-
-    <!-- Canvas Auto-Scaler for Mobile -->
+    <!-- Canvas Auto-Scaler for Mobile (Upgraded to ResizeObserver) -->
     <script>
         function adjustCanvasScale() {
             const wrapper = document.querySelector('.canvas-wrapper');
             const canvas = document.getElementById('canvas-container');
+            
+            // Ensure the canvas stretches naturally first
+            canvas.style.height = 'auto'; 
+            
             const wrapperWidth = wrapper.clientWidth;
             
             // If screen is smaller than the 800px zine, scale it down perfectly
-            if (wrapperWidth < 800) {
+            if (wrapperWidth > 0 && wrapperWidth < 800) {
                 const scale = wrapperWidth / 800;
                 canvas.style.transform = `scale(${scale})`;
-                // Adjust wrapper height so we don't leave massive blank white space
-                wrapper.style.height = `${canvas.offsetHeight * scale}px`;
+                // Use scrollHeight to guarantee we grab the FULL unclipped height of all content
+                wrapper.style.height = `${canvas.scrollHeight * scale}px`;
             } else {
                 canvas.style.transform = 'scale(1)';
                 wrapper.style.height = 'auto';
             }
         }
 
-        // Run scaling on load, resize, and whenever layout elements are added/changed
-        window.addEventListener('load', adjustCanvasScale);
+        window.addEventListener('load', () => {
+            adjustCanvasScale();
+            // Fallback sweep just in case large images take a second to load
+            setTimeout(adjustCanvasScale, 500); 
+        });
         window.addEventListener('resize', adjustCanvasScale);
         
-        const observer = new MutationObserver(adjustCanvasScale);
-        observer.observe(document.getElementById('canvas-container'), { childList: true, subtree: true, characterData: true, attributes: true });
+        // This acts as a live sensor. Anytime an image loads, text wraps, or items are dragged, 
+        // it instantly triggers the scaler to fix the wrapper height so nothing is ever cut off.
+        const resizeObserver = new ResizeObserver(() => {
+            adjustCanvasScale();
+        });
+        
+        resizeObserver.observe(document.getElementById('canvas-container'));
     </script>
 </body>
 </html>

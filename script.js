@@ -1,6 +1,22 @@
 const root = document.documentElement;
 const grid = document.getElementById('mainGrid');
 
+// --- DRAG AND DROP SETUP ---
+// We use a small, reliable script to handle mobile-friendly long-press dragging
+const sortableScript = document.createElement('script');
+sortableScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js';
+document.head.appendChild(sortableScript);
+
+sortableScript.onload = () => {
+    new Sortable(grid, {
+        animation: 150,
+        delay: 500, // 500ms long-press required on mobile to start dragging
+        delayOnTouchOnly: true,
+        ghostClass: 'sortable-ghost',
+        onEnd: () => saveState() 
+    });
+};
+
 let presets = {
     cherrySnow: { bg: '#fdf5f8', accent: '#f1d4df', text: '#333333', header: "'Playfair Display', serif", font: "'Inter', sans-serif" },
     slavicWinter: { bg: '#e6f2fa', accent: '#cce0f0', text: '#2c3e50', header: "'Playfair Display', serif", font: "'Inter', sans-serif" },
@@ -136,18 +152,35 @@ updateVar('accentColor', '--accent-border');
 updateVar('headerFont', '--header-font');
 updateVar('paragraphFont', '--paragraph-font');
 
+// --- IMPROVED SCRAMBLE LOGIC ---
 document.getElementById('scrambleBtn').addEventListener('click', () => {
     grid.className = 'layout-grid collage-mode';
     document.getElementById('layoutStyle').value = 'collage';
     
     const blocks = document.querySelectorAll('.content-block');
     blocks.forEach(block => {
-        const colSpan = Math.random() > 0.6 ? 2 : 1;
-        const rowSpan = Math.random() > 0.6 ? 2 : 1;
+        // Prevent massive 2x2 stretched boxes that crop photos.
+        // Limit max column span to 2, and row span strictly to 1 or auto so images don't get forced into tall vertical slices.
+        const isImage = block.classList.contains('image-block');
         
-        block.style.gridColumn = `span ${colSpan}`;
-        block.style.gridRow = `span ${rowSpan}`;
+        if (isImage) {
+            // Images span 1 or 2 columns, but height stays natural (row span 1)
+            const colSpan = Math.random() > 0.5 ? 2 : 1;
+            block.style.gridColumn = `span ${colSpan}`;
+            block.style.gridRow = `span 1`; 
+        } else {
+            // Text boxes can be a bit more flexible but we still limit extreme stretching
+            const colSpan = Math.random() > 0.7 ? 2 : 1;
+            block.style.gridColumn = `span ${colSpan}`;
+            block.style.gridRow = `span 1`; 
+        }
     });
+    
+    // Shuffle the physical DOM order for a true "scramble" effect
+    const blocksArray = Array.from(blocks);
+    blocksArray.sort(() => Math.random() - 0.5);
+    blocksArray.forEach(block => grid.appendChild(block));
+    
     saveState();
 });
 
@@ -191,9 +224,11 @@ function createTextBlock(headerText = "New Section:", bodyText = "Type text here
         <div contenteditable="true" style="flex-grow: 1;">${bodyText}</div>
     `;
     grid.appendChild(newBlock);
+    
+    // Check if we are currently in collage mode to apply styling immediately
     if (grid.classList.contains('collage-mode')) {
-        newBlock.style.gridColumn = `span ${Math.random() > 0.6 ? 2 : 1}`;
-        newBlock.style.gridRow = `span ${Math.random() > 0.6 ? 2 : 1}`;
+        newBlock.style.gridColumn = `span ${Math.random() > 0.7 ? 2 : 1}`;
+        newBlock.style.gridRow = `span 1`;
     }
     saveState();
 }
@@ -237,9 +272,10 @@ bulkUploadInput.addEventListener('change', function(e) {
                 `;
                 grid.appendChild(newBlock);
                 
+                // Keep image proportions safe on upload in collage mode
                 if (grid.classList.contains('collage-mode')) {
                     newBlock.style.gridColumn = `span ${Math.random() > 0.5 ? 2 : 1}`;
-                    newBlock.style.gridRow = `span ${Math.random() > 0.5 ? 2 : 1}`;
+                    newBlock.style.gridRow = `span 1`;
                 }
                 saveState();
             };
@@ -279,4 +315,3 @@ document.getElementById('clearBtn').addEventListener('click', () => {
 });
 
 window.onload = loadState;
-

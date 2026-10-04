@@ -151,7 +151,6 @@ updateVar('accentColor', '--accent-border');
 updateVar('headerFont', '--header-font');
 updateVar('paragraphFont', '--paragraph-font');
 
-// --- UPDATED SCRAMBLE LOGIC ---
 document.getElementById('scrambleBtn').addEventListener('click', () => {
     // Only shuffle the physical DOM order. No resizing dimensions.
     const blocks = document.querySelectorAll('.content-block');
@@ -251,13 +250,26 @@ bulkUploadInput.addEventListener('change', function(e) {
     e.target.value = ''; 
 });
 
+// --- UPDATED CRISP DOWNLOAD LOGIC ---
 function triggerDownload(callback = null) {
     const canvasContainer = document.getElementById('canvas-container');
     const deleteBtns = document.querySelectorAll('.delete-btn');
     
+    // Hide delete buttons on the live screen so they aren't captured
     deleteBtns.forEach(btn => btn.style.display = 'none');
 
-    html2canvas(canvasContainer, { useCORS: true, scale: 2 }).then(canvas => {
+    html2canvas(canvasContainer, { 
+        useCORS: true, 
+        scale: 3, // Boosted to 3x resolution for ultra-crisp print quality
+        onclone: (clonedDoc) => {
+            // Find the zine container in the background snapshot
+            const clonedCanvas = clonedDoc.getElementById('canvas-container');
+            // Force the snapshot to ignore the mobile CSS shrink effect
+            // so it captures the true, high-res 800px width
+            clonedCanvas.style.transform = 'none';
+        }
+    }).then(canvas => {
+        // Restore delete buttons to the live screen
         deleteBtns.forEach(btn => btn.style.display = 'flex');
 
         const link = document.createElement('a');
